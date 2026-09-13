@@ -2,7 +2,7 @@
 
 Plataforma modular de servicios REST para autenticación, gestión de usuarios y capacidades compartidas entre las aplicaciones Pet, SonicPI y Health.
 
-> Estado: definición inicial. Aún no contiene una implementación ejecutable.
+> Estado: base ejecutable de NestJS. Autenticación y persistencia aún pendientes.
 
 ## Propósito
 
@@ -59,4 +59,24 @@ La selección final se versionará junto con la implementación; no se instalar�
 
 ## Desarrollo
 
-Las instrucciones de instalación y ejecución se añadirán cuando se incorpore la primera versión ejecutable del proyecto.
+Requiere Node.js 24.
+
+```bash
+npm install
+npm run start:dev
+```
+
+Con el servidor en ejecución, el endpoint técnico `GET /api/v1/health` responde:
+
+```json
+{ "status": "ok" }
+```
+
+Antes de integrar cambios, verifica la base con:
+
+```bash
+npm run build
+npm test
+npm run test:e2e
+npm audit
+```

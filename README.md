@@ -108,6 +108,14 @@ Dentro de NestJS, `PrismaModule` expone `PrismaService` como la única puerta t�
 
 `users` concentra el modelo compartido de usuario y separa sus casos de uso del adaptador PostgreSQL. No expone rutas HTTP ni devuelve hashes de contraseña: esa responsabilidad se añadirá al módulo `auth`.
 
+## Registro
+
+`POST /api/v1/auth/register` crea un usuario con un correo y contraseña válidos. Las contraseñas se procesan con Argon2id y nunca se incluyen en las respuestas ni se almacenan en texto plano.
+
+`POST /api/v1/auth/login` emite un access token JWT de corta duración y un refresh token opaco. Los refresh tokens se almacenan únicamente como hash en `refresh_sessions`, para que puedan revocarse o rotarse sin persistir secretos de sesión.
+
+Las rutas de autenticación permiten cinco intentos por IP en un minuto. El almacenamiento del rate limit es local en esta etapa; antes de desplegar varias réplicas se reemplazará por un almacenamiento compartido, como Redis.
+
 ```bash
 npm run prisma:validate
 npm run prisma:migrate -- --name describe-your-change

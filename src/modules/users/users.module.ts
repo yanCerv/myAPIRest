@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../infrastructure/database/prisma/prisma.module.js';
 import { CreateUserUseCase } from './application/create-user.use-case.js';
+import { FindUserByEmailUseCase } from './application/find-user-by-email.use-case.js';
 import { FindUserByIdUseCase } from './application/find-user-by-id.use-case.js';
 import { USER_REPOSITORY } from './domain/user.repository.js';
 import { PrismaUserRepository } from './infrastructure/prisma-user.repository.js';
@@ -9,12 +10,13 @@ import { PrismaUserRepository } from './infrastructure/prisma-user.repository.js
   imports: [PrismaModule],
   providers: [
     CreateUserUseCase,
+    FindUserByEmailUseCase,
     FindUserByIdUseCase,
     {
       provide: USER_REPOSITORY,
       useClass: PrismaUserRepository,
     },
   ],
-  exports: [CreateUserUseCase, FindUserByIdUseCase],
+  exports: [CreateUserUseCase, FindUserByEmailUseCase, FindUserByIdUseCase],
 })
 export class UsersModule {}

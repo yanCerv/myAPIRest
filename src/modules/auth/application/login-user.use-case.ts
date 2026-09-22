@@ -25,6 +25,8 @@ export interface LoginResult {
   refreshToken: string;
   tokenType: 'Bearer';
   expiresIn: number;
+  accessTokenExpiresAt: Date;
+  session: { expiresAt: Date; timeZone: 'UTC' };
 }
 
 @Injectable()
@@ -53,15 +55,14 @@ export class LoginUserUseCase {
     const refreshSecret = randomBytes(32).toString('base64url');
     const refreshToken = `${sessionId}.${refreshSecret}`;
     const refreshTokenHash = await this.passwordHasher.hash(refreshToken);
-    const expiresAt = new Date(
-      Date.now() + this.getRefreshTokenTtlDays() * 24 * 60 * 60 * 1000,
-    );
+    const absoluteExpiresAt = new Date(Date.now() + 24 * 3_600_000);
 
     await this.sessions.create({
       id: sessionId,
       userId: user.id,
       tokenHash: refreshTokenHash,
-      expiresAt,
+      expiresAt: absoluteExpiresAt,
+      absoluteExpiresAt,
     });
 
     const accessToken = await this.accessTokens.issue(user.id);
@@ -71,16 +72,9 @@ export class LoginUserUseCase {
       refreshToken,
       tokenType: 'Bearer',
       expiresIn: accessToken.expiresIn,
+      accessTokenExpiresAt: new Date(Date.now() + accessToken.expiresIn * 1000),
+      session: { expiresAt: absoluteExpiresAt, timeZone: 'UTC' },
     };
   }
 
-  private getRefreshTokenTtlDays(): number {
-    const value = Number(process.env.REFRESH_TOKEN_TTL_DAYS ?? 30);
-
-    if (!Number.isInteger(value) || value <= 0 || value > 90) {
-      throw new Error('REFRESH_TOKEN_TTL_DAYS must be an integer between 1 and 90.');
-    }
-
-    return value;
-  }
 }

@@ -32,25 +32,23 @@ export class RefreshUserSessionUseCase {
     const session = await this.sessions.findById(parsed.sessionId);
     if (
       !session || !session.userIsActive || session.revokedAt ||
-      session.expiresAt <= new Date() ||
+      session.expiresAt <= new Date() || session.absoluteExpiresAt <= new Date() ||
       !(await this.passwordHasher.verify(session.tokenHash, parsed.rawToken))
     ) throw new InvalidRefreshTokenError();
 
     const refreshToken = `${session.id}.${randomBytes(32).toString('base64url')}`;
     const tokenHash = await this.passwordHasher.hash(refreshToken);
-    const expiresAt = new Date(Date.now() + this.ttlDays() * 86_400_000);
+    const expiresAt = session.absoluteExpiresAt;
     const rotated = await this.sessions.rotate({
       id: session.id, expectedVersion: session.version, tokenHash, expiresAt,
     });
     if (!rotated) throw new InvalidRefreshTokenError();
 
     const accessToken = await this.accessTokens.issue(session.userId);
-    return { accessToken: accessToken.token, refreshToken, tokenType: 'Bearer', expiresIn: accessToken.expiresIn };
-  }
-
-  private ttlDays(): number {
-    const value = Number(process.env.REFRESH_TOKEN_TTL_DAYS ?? 30);
-    if (!Number.isInteger(value) || value <= 0 || value > 90) throw new Error('REFRESH_TOKEN_TTL_DAYS must be an integer between 1 and 90.');
-    return value;
+    return {
+      accessToken: accessToken.token, refreshToken, tokenType: 'Bearer', expiresIn: accessToken.expiresIn,
+      accessTokenExpiresAt: new Date(Date.now() + accessToken.expiresIn * 1000),
+      session: { expiresAt: session.absoluteExpiresAt, timeZone: 'UTC' },
+    };
   }
 }

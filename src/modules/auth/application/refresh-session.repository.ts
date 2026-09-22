@@ -3,6 +3,7 @@ export interface CreateRefreshSessionData {
   userId: string;
   tokenHash: string;
   expiresAt: Date;
+  absoluteExpiresAt: Date;
 }
 
 export interface RefreshSessionRepository {
@@ -19,6 +20,7 @@ export interface RefreshSession {
   userId: string;
   tokenHash: string;
   expiresAt: Date;
+  absoluteExpiresAt: Date;
   revokedAt: Date | null;
   version: number;
   userIsActive: boolean;

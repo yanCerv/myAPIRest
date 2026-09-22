@@ -23,7 +23,7 @@ export class PrismaRefreshSessionRepository implements RefreshSessionRepository 
     if (!session) return null;
     return {
       id: session.id, userId: session.userId, tokenHash: session.tokenHash,
-      expiresAt: session.expiresAt, revokedAt: session.revokedAt,
+      expiresAt: session.expiresAt, absoluteExpiresAt: session.absoluteExpiresAt, revokedAt: session.revokedAt,
       version: session.version, userIsActive: session.user.isActive,
     };
   }

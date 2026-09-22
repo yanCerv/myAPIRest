@@ -173,6 +173,56 @@ describe('Health endpoint (e2e)', () => {
     }
   });
 
+  it('returns only the authenticated user safe profile', async () => {
+    const email = `profile-${randomUUID()}@example.test`;
+    const password = 'a-long-password-for-testing';
+
+    try {
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/register')
+        .send({ email, password })
+        .expect(201);
+      const login = await request(app.getHttpServer())
+        .post('/api/v1/auth/login')
+        .send({ email, password })
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/users/me')
+        .set('Authorization', `Bearer ${login.body.accessToken}`)
+        .expect(200);
+
+      expect(response.body).toMatchObject({ email, isActive: true });
+      expect(response.body).not.toHaveProperty('passwordHash');
+      expect(response.body).not.toHaveProperty('sessions');
+    } finally {
+      await app.get(PrismaService).user.deleteMany({ where: { email } });
+    }
+  });
+
+  it('rejects missing and refresh-token authentication for /users/me', async () => {
+    await request(app.getHttpServer()).get('/api/v1/users/me').expect(401);
+
+    const email = `wrong-token-${randomUUID()}@example.test`;
+    const password = 'a-long-password-for-testing';
+    try {
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/register')
+        .send({ email, password })
+        .expect(201);
+      const login = await request(app.getHttpServer())
+        .post('/api/v1/auth/login')
+        .send({ email, password })
+        .expect(201);
+      await request(app.getHttpServer())
+        .get('/api/v1/users/me')
+        .set('Authorization', `Bearer ${login.body.refreshToken}`)
+        .expect(401);
+    } finally {
+      await app.get(PrismaService).user.deleteMany({ where: { email } });
+    }
+  });
+
   afterEach(async () => {
     if (app) {
       await app.close();

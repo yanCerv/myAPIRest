@@ -155,6 +155,24 @@ describe('Health endpoint (e2e)', () => {
       .expect(429);
   });
 
+  it('rotates and revokes refresh sessions', async () => {
+    const email = `session-${randomUUID()}@example.test`;
+    const password = 'a-long-password-for-testing';
+    try {
+      await request(app.getHttpServer()).post('/api/v1/auth/register').send({ email, password }).expect(201);
+      const login = await request(app.getHttpServer()).post('/api/v1/auth/login').send({ email, password }).expect(201);
+      const firstToken = login.body.refreshToken as string;
+      const refresh = await request(app.getHttpServer()).post('/api/v1/auth/refresh').send({ refreshToken: firstToken }).expect(201);
+      const secondToken = refresh.body.refreshToken as string;
+      expect(secondToken).not.toBe(firstToken);
+      await request(app.getHttpServer()).post('/api/v1/auth/refresh').send({ refreshToken: firstToken }).expect(401);
+      await request(app.getHttpServer()).post('/api/v1/auth/logout').send({ refreshToken: secondToken }).expect(204);
+      await request(app.getHttpServer()).post('/api/v1/auth/refresh').send({ refreshToken: secondToken }).expect(401);
+    } finally {
+      await app.get(PrismaService).user.deleteMany({ where: { email } });
+    }
+  });
+
   afterEach(async () => {
     await app.close();
   });

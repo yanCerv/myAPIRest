@@ -2,6 +2,7 @@ import {
   Body,
   ConflictException,
   Controller,
+  HttpCode,
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -16,12 +17,17 @@ import {
   LoginUserUseCase,
 } from '../application/login-user.use-case.js';
 import type { LoginResult } from '../application/login-user.use-case.js';
+import { LogoutUserSessionUseCase } from '../application/logout-user-session.use-case.js';
+import { InvalidRefreshTokenError, RefreshUserSessionUseCase } from '../application/refresh-user-session.use-case.js';
+import { RefreshTokenDto } from './dto/refresh-token.dto.js';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly registerUser: RegisterUserUseCase,
     private readonly loginUser: LoginUserUseCase,
+    private readonly refreshUserSession: RefreshUserSessionUseCase,
+    private readonly logoutUserSession: LogoutUserSessionUseCase,
   ) {}
 
   @Post('register')
@@ -50,5 +56,23 @@ export class AuthController {
 
       throw error;
     }
+  }
+
+  @Post('refresh')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  async refresh(@Body() input: RefreshTokenDto): Promise<LoginResult> {
+    try {
+      return await this.refreshUserSession.execute(input.refreshToken);
+    } catch (error) {
+      if (error instanceof InvalidRefreshTokenError) throw new UnauthorizedException('Invalid refresh token.');
+      throw error;
+    }
+  }
+
+  @Post('logout')
+  @HttpCode(204)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  async logout(@Body() input: RefreshTokenDto): Promise<void> {
+    await this.logoutUserSession.execute(input.refreshToken);
   }
 }

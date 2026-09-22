@@ -104,6 +104,10 @@ Prisma gestiona el esquema y las migraciones de PostgreSQL. El modelo compartido
 
 Dentro de NestJS, `PrismaModule` expone `PrismaService` como la única puerta técnica a PostgreSQL. Los módulos de negocio deben depender de ese servicio, nunca abrir conexiones o ejecutar SQL por su cuenta.
 
+## Módulo de usuarios
+
+`users` concentra el modelo compartido de usuario y separa sus casos de uso del adaptador PostgreSQL. No expone rutas HTTP ni devuelve hashes de contraseña: esa responsabilidad se añadirá al módulo `auth`.
+
 ```bash
 npm run prisma:validate
 npm run prisma:migrate -- --name describe-your-change

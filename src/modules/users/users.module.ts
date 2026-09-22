@@ -19,6 +19,11 @@ import { UsersController } from './presentation/users.controller.js';
       useClass: PrismaUserRepository,
     },
   ],
-  exports: [CreateUserUseCase, FindUserByEmailUseCase, FindUserByIdUseCase],
+  exports: [
+    CreateUserUseCase,
+    FindUserByEmailUseCase,
+    FindUserByIdUseCase,
+    USER_REPOSITORY,
+  ],
 })
 export class UsersModule {}

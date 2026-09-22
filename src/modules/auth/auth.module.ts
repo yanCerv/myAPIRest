@@ -9,11 +9,15 @@ import { LoginUserUseCase } from './application/login-user.use-case.js';
 import { LogoutUserSessionUseCase } from './application/logout-user-session.use-case.js';
 import { RefreshUserSessionUseCase } from './application/refresh-user-session.use-case.js';
 import { RegisterUserUseCase } from './application/register-user.use-case.js';
+import { RequestPasswordResetUseCase } from './application/request-password-reset.use-case.js';
+import { ResetPasswordUseCase } from './application/reset-password.use-case.js';
 import { Argon2PasswordHasher } from './infrastructure/argon2-password-hasher.js';
+import { PrismaAccountActionTokenRepository } from './infrastructure/prisma-account-action-token.repository.js';
 import { JwtAccessTokenIssuer } from './infrastructure/jwt-access-token-issuer.js';
 import { AccessTokenGuard } from './infrastructure/access-token.guard.js';
 import { PrismaRefreshSessionRepository } from './infrastructure/prisma-refresh-session.repository.js';
 import { AuthController } from './presentation/auth.controller.js';
+import { ACCOUNT_ACTION_TOKEN_REPOSITORY } from './application/account-action-token.repository.js';
 
 @Global()
 @Module({
@@ -25,6 +29,8 @@ import { AuthController } from './presentation/auth.controller.js';
     AccessTokenGuard,
     LogoutUserSessionUseCase,
     RefreshUserSessionUseCase,
+    RequestPasswordResetUseCase,
+    ResetPasswordUseCase,
     {
       provide: PASSWORD_HASHER,
       useClass: Argon2PasswordHasher,
@@ -36,6 +42,10 @@ import { AuthController } from './presentation/auth.controller.js';
     {
       provide: REFRESH_SESSION_REPOSITORY,
       useClass: PrismaRefreshSessionRepository,
+    },
+    {
+      provide: ACCOUNT_ACTION_TOKEN_REPOSITORY,
+      useClass: PrismaAccountActionTokenRepository,
     },
   ],
   exports: [AccessTokenGuard],

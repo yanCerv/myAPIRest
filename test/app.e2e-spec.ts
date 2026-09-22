@@ -136,6 +136,63 @@ describe('Health endpoint (e2e)', () => {
       .expect(401);
   });
 
+  it('accepts password recovery requests without exposing account existence', async () => {
+    const email = `password-reset-${randomUUID()}@example.test`;
+    const password = 'a-long-password-for-testing';
+
+    try {
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/register')
+        .send({ email, password })
+        .expect(201);
+
+      const knownAccount = await request(app.getHttpServer())
+        .post('/api/v1/auth/forgot-password')
+        .send({ email })
+        .expect(202);
+      const unknownAccount = await request(app.getHttpServer())
+        .post('/api/v1/auth/forgot-password')
+        .send({ email: `unknown-${randomUUID()}@example.test` })
+        .expect(202);
+
+      expect(knownAccount.body).toEqual(unknownAccount.body);
+
+      const prisma = app.get(PrismaService);
+      const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+      const token = await prisma.accountActionToken.findFirstOrThrow({
+        where: { userId: user.id, purpose: 'RESET_PASSWORD' },
+      });
+      expect(token.tokenHash).toMatch(/^\$argon2id\$/);
+      expect(token.expiresAt.getTime()).toBeGreaterThan(Date.now());
+      expect(token.consumedAt).toBeNull();
+    } finally {
+      await app.get(PrismaService).user.deleteMany({ where: { email } });
+    }
+  });
+
+  it('rejects an invalid OTP when resetting a password', async () => {
+    const email = `invalid-reset-${randomUUID()}@example.test`;
+    const password = 'a-long-password-for-testing';
+
+    try {
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/register')
+        .send({ email, password })
+        .expect(201);
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/forgot-password')
+        .send({ email })
+        .expect(202);
+
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/reset-password')
+        .send({ email, otp: '000000', newPassword: 'another-secure-password' })
+        .expect(401);
+    } finally {
+      await app.get(PrismaService).user.deleteMany({ where: { email } });
+    }
+  });
+
   it('limits authentication attempts by IP address', async () => {
     const requestBody = {
       email: `rate-limit-${randomUUID()}@example.test`,

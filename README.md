@@ -2,7 +2,7 @@
 
 Plataforma modular de servicios REST para autenticación, gestión de usuarios y capacidades compartidas entre las aplicaciones Pet, SonicPI y Health.
 
-> Estado: base ejecutable de NestJS. Autenticación y persistencia aún pendientes.
+> Estado: API base ejecutable con autenticación, sesiones y recuperación de contraseña.
 
 ## Propósito
 
@@ -17,6 +17,8 @@ La primera versión expondrá una API versionada (`/api/v1`) con estos endpoints
 | `POST` | `/auth/register` | Crear una cuenta de usuario. |
 | `POST` | `/auth/login` | Iniciar una sesión. |
 | `POST` | `/auth/logout` | Revocar la sesión actual. |
+| `POST` | `/auth/forgot-password` | Solicitar un OTP de recuperación. |
+| `POST` | `/auth/reset-password` | Confirmar OTP y cambiar contraseña. |
 | `GET` | `/users/me` | Consultar el perfil del usuario autenticado. |
 | `DELETE` | `/users/me` | Eliminar la cuenta del usuario autenticado. |
 
@@ -49,13 +51,6 @@ La selección final se versionará junto con la implementación; no se instalar�
 - CORS limitado a orígenes permitidos y cabeceras de seguridad.
 - Secretos exclusivamente en variables de entorno; `.env` nunca se sube al repositorio. Se proporcionará `.env.example` sin secretos.
 - Migraciones, lockfile y configuración reproducible sí se guardan en Git.
-
-## Próximos pasos
-
-1. Añadir `.gitignore` y configuración base para Node.js/TypeScript.
-2. Inicializar NestJS y las herramientas de formato, lint y pruebas.
-3. Crear Docker Compose con PostgreSQL y configurar Prisma.
-4. Implementar el módulo `auth` con pruebas de seguridad antes de integrar aplicaciones consumidoras.
 
 ## Desarrollo
 
@@ -116,6 +111,8 @@ Dentro de NestJS, `PrismaModule` expone `PrismaService` como la única puerta t�
 
 `POST /api/v1/auth/refresh` rota el refresh token: el anterior deja de ser válido al entregar el siguiente. `POST /api/v1/auth/logout` revoca la sesión asociada al refresh token.
 
+`POST /api/v1/auth/forgot-password` siempre responde `202`, exista o no la cuenta, para no revelar correos registrados. Para una cuenta activa genera un OTP de seis dígitos, válido durante 15 minutos. `POST /api/v1/auth/reset-password` valida el OTP, permite un máximo de cinco intentos, cambia la contraseña y revoca todas las sesiones existentes.
+
 Las rutas de autenticación permiten cinco intentos por IP en un minuto. El almacenamiento del rate limit es local en esta etapa; antes de desplegar varias réplicas se reemplazará por un almacenamiento compartido, como Redis.
 
 ```bash
@@ -125,3 +122,17 @@ npm run prisma:generate
 ```
 
 Las migraciones generadas en `prisma/migrations` se guardan en Git. El cliente generado en `src/generated/prisma` no se versiona: se vuelve a generar desde el esquema.
+
+## Correo transaccional
+
+El proyecto usa una abstracción `EmailService`. En local, `EMAIL_PROVIDER=console` es el valor predeterminado: el servidor registra el OTP y no entrega correo a Internet.
+
+Para activar Resend, crea una API key y verifica el dominio del remitente en su panel. En tu `.env`, que nunca se versiona, configura:
+
+```bash
+EMAIL_PROVIDER=resend
+RESEND_API_KEY=re_...
+EMAIL_FROM="MyAPIRest <noreply@tu-dominio-verificado.com>"
+```
+
+No pongas `RESEND_API_KEY` en clientes web o móviles, repositorios ni mensajes. Resend recibe la solicitud exclusivamente desde esta API. La integración usa el SDK oficial de Node.js; su guía requiere una API key y un remitente configurado. [Documentación de Resend](https://resend.com/nodejs)

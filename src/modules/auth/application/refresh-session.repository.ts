@@ -11,6 +11,7 @@ export interface RefreshSessionRepository {
   findById(id: string): Promise<RefreshSession | null>;
   rotate(data: RotateRefreshSessionData): Promise<boolean>;
   revoke(id: string, expectedVersion: number): Promise<boolean>;
+  revokeAllForUser(userId: string): Promise<void>;
 }
 
 export const REFRESH_SESSION_REPOSITORY = Symbol('REFRESH_SESSION_REPOSITORY');

@@ -20,6 +20,13 @@ import type { LoginResult } from '../application/login-user.use-case.js';
 import { LogoutUserSessionUseCase } from '../application/logout-user-session.use-case.js';
 import { InvalidRefreshTokenError, RefreshUserSessionUseCase } from '../application/refresh-user-session.use-case.js';
 import { RefreshTokenDto } from './dto/refresh-token.dto.js';
+import { RequestPasswordResetDto } from './dto/request-password-reset.dto.js';
+import { RequestPasswordResetUseCase } from '../application/request-password-reset.use-case.js';
+import {
+  InvalidPasswordResetCodeError,
+  ResetPasswordUseCase,
+} from '../application/reset-password.use-case.js';
+import { ResetPasswordDto } from './dto/reset-password.dto.js';
 
 @Controller('auth')
 export class AuthController {
@@ -28,6 +35,8 @@ export class AuthController {
     private readonly loginUser: LoginUserUseCase,
     private readonly refreshUserSession: RefreshUserSessionUseCase,
     private readonly logoutUserSession: LogoutUserSessionUseCase,
+    private readonly requestPasswordReset: RequestPasswordResetUseCase,
+    private readonly resetPassword: ResetPasswordUseCase,
   ) {}
 
   @Post('register')
@@ -40,6 +49,30 @@ export class AuthController {
         throw new ConflictException('Email already registered.');
       }
 
+      throw error;
+    }
+  }
+
+  @Post('forgot-password')
+  @HttpCode(202)
+  @Throttle({ default: { limit: 3, ttl: 15 * 60_000 } })
+  async forgotPassword(@Body() input: RequestPasswordResetDto): Promise<{ message: string }> {
+    await this.requestPasswordReset.execute(input.email);
+    return {
+      message: 'If an active account matches this email, recovery instructions will be sent.',
+    };
+  }
+
+  @Post('reset-password')
+  @HttpCode(204)
+  @Throttle({ default: { limit: 5, ttl: 15 * 60_000 } })
+  async resetPasswordWithOtp(@Body() input: ResetPasswordDto): Promise<void> {
+    try {
+      await this.resetPassword.execute(input);
+    } catch (error) {
+      if (error instanceof InvalidPasswordResetCodeError) {
+        throw new UnauthorizedException('Invalid or expired password reset code.');
+      }
       throw error;
     }
   }

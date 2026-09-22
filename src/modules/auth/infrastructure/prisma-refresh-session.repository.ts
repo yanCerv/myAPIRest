@@ -43,4 +43,11 @@ export class PrismaRefreshSessionRepository implements RefreshSessionRepository 
     });
     return result.count === 1;
   }
+
+  async revokeAllForUser(userId: string): Promise<void> {
+    await this.prisma.refreshSession.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date(), version: { increment: 1 } },
+    });
+  }
 }

@@ -5,9 +5,11 @@ import { FindUserByEmailUseCase } from './application/find-user-by-email.use-cas
 import { FindUserByIdUseCase } from './application/find-user-by-id.use-case.js';
 import { USER_REPOSITORY } from './domain/user.repository.js';
 import { PrismaUserRepository } from './infrastructure/prisma-user.repository.js';
+import { UsersController } from './presentation/users.controller.js';
 
 @Module({
   imports: [PrismaModule],
+  controllers: [UsersController],
   providers: [
     CreateUserUseCase,
     FindUserByEmailUseCase,

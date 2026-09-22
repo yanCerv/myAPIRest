@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '../../infrastructure/database/prisma/prisma.module.js';
 import { UsersModule } from '../users/users.module.js';
@@ -11,15 +11,18 @@ import { RefreshUserSessionUseCase } from './application/refresh-user-session.us
 import { RegisterUserUseCase } from './application/register-user.use-case.js';
 import { Argon2PasswordHasher } from './infrastructure/argon2-password-hasher.js';
 import { JwtAccessTokenIssuer } from './infrastructure/jwt-access-token-issuer.js';
+import { AccessTokenGuard } from './infrastructure/access-token.guard.js';
 import { PrismaRefreshSessionRepository } from './infrastructure/prisma-refresh-session.repository.js';
 import { AuthController } from './presentation/auth.controller.js';
 
+@Global()
 @Module({
-  imports: [JwtModule.register({}), PrismaModule, UsersModule],
+  imports: [JwtModule.register({ global: true }), PrismaModule, UsersModule],
   controllers: [AuthController],
   providers: [
     RegisterUserUseCase,
     LoginUserUseCase,
+    AccessTokenGuard,
     LogoutUserSessionUseCase,
     RefreshUserSessionUseCase,
     {
@@ -35,5 +38,6 @@ import { AuthController } from './presentation/auth.controller.js';
       useClass: PrismaRefreshSessionRepository,
     },
   ],
+  exports: [AccessTokenGuard],
 })
 export class AuthModule {}

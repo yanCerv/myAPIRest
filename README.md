@@ -102,6 +102,8 @@ docker compose down
 
 Prisma gestiona el esquema y las migraciones de PostgreSQL. El modelo compartido inicial es `User`; datos exclusivos de Pet o Health se modelarán en módulos separados.
 
+Dentro de NestJS, `PrismaModule` expone `PrismaService` como la única puerta técnica a PostgreSQL. Los módulos de negocio deben depender de ese servicio, nunca abrir conexiones o ejecutar SQL por su cuenta.
+
 ```bash
 npm run prisma:validate
 npm run prisma:migrate -- --name describe-your-change

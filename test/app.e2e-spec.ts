@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { configureApp } from '../src/app.config.js';
 import { AppModule } from '../src/app.module.js';
+import { PrismaService } from '../src/infrastructure/database/prisma/prisma.service.js';
 
 describe('Health endpoint (e2e)', () => {
   let app: INestApplication<App>;
@@ -23,6 +24,13 @@ describe('Health endpoint (e2e)', () => {
       .get('/api/v1/health')
       .expect(200)
       .expect({ status: 'ok' });
+  });
+
+  it('connects to PostgreSQL through Prisma', async () => {
+    const prisma = app.get(PrismaService);
+    const result = await prisma.$queryRaw<[{ healthy: number }]>`SELECT 1 AS healthy`;
+
+    expect(result).toEqual([{ healthy: 1 }]);
   });
 
   afterEach(async () => {

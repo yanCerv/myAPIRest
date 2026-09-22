@@ -20,7 +20,6 @@ La primera versión expondrá una API versionada (`/api/v1`) con estos endpoints
 | `POST` | `/auth/forgot-password` | Solicitar un OTP de recuperación. |
 | `POST` | `/auth/reset-password` | Confirmar OTP y cambiar contraseña. |
 | `GET` | `/users/me` | Consultar el perfil del usuario autenticado. |
-| `DELETE` | `/users/me` | Eliminar la cuenta del usuario autenticado. |
 
 ## Límites por dominio
 
@@ -38,7 +37,7 @@ La arquitectura inicial será un **monolito modular**. Es más simple de desarro
 - Prisma ORM y migraciones versionadas
 - Docker Compose para el entorno local
 - OpenAPI/Swagger para documentar el contrato HTTP
-- Jest para pruebas
+- Vitest para pruebas
 
 La selección final se versionará junto con la implementación; no se instalarán dependencias sin revisar su mantenimiento, licencia y necesidad.
 
@@ -48,7 +47,7 @@ La selección final se versionará junto con la implementación; no se instalar�
 - Access tokens de corta duración y refresh tokens rotatorios, almacenados como hash y revocables al cerrar sesión.
 - Validación de toda entrada HTTP, límites de tamaño de payload y respuestas de error sin datos internos.
 - Rate limiting en endpoints sensibles como registro y login.
-- CORS limitado a orígenes permitidos y cabeceras de seguridad.
+- CORS y cabeceras de seguridad se configurarán antes de habilitar clientes web o despliegues públicos.
 - Secretos exclusivamente en variables de entorno; `.env` nunca se sube al repositorio. Se proporcionará `.env.example` sin secretos.
 - Migraciones, lockfile y configuración reproducible sí se guardan en Git.
 
@@ -66,6 +65,8 @@ Con el servidor en ejecución, el endpoint técnico `GET /api/v1/health` respond
 ```json
 { "status": "ok" }
 ```
+
+La documentación interactiva está disponible en `http://localhost:3000/api/docs` y su documento OpenAPI JSON en `http://localhost:3000/api/docs-json`. Swagger permite obtener los ejemplos de cada endpoint y usar **Authorize** con un access token Bearer para probar `GET /users/me`.
 
 Antes de integrar cambios, verifica la base con:
 

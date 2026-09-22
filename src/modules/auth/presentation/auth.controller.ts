@@ -6,6 +6,11 @@ import {
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { EmailAlreadyInUseError } from '../../users/domain/user.errors.js';
 import { RegisterUserUseCase } from '../application/register-user.use-case.js';
@@ -28,6 +33,7 @@ import {
 } from '../application/reset-password.use-case.js';
 import { ResetPasswordDto } from './dto/reset-password.dto.js';
 
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -40,6 +46,9 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @ApiOperation({ summary: 'Create an account' })
+  @ApiResponse({ status: 201, description: 'Account created.' })
+  @ApiResponse({ status: 409, description: 'Email already registered.' })
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   async register(@Body() input: RegisterUserDto): Promise<RegisteredUser> {
     try {
@@ -54,6 +63,8 @@ export class AuthController {
   }
 
   @Post('forgot-password')
+  @ApiOperation({ summary: 'Request a password-recovery OTP' })
+  @ApiResponse({ status: 202, description: 'Always returned to avoid account enumeration.' })
   @HttpCode(202)
   @Throttle({ default: { limit: 3, ttl: 15 * 60_000 } })
   async forgotPassword(@Body() input: RequestPasswordResetDto): Promise<{ message: string }> {
@@ -64,6 +75,9 @@ export class AuthController {
   }
 
   @Post('reset-password')
+  @ApiOperation({ summary: 'Set a new password using an OTP' })
+  @ApiResponse({ status: 204, description: 'Password changed and active refresh sessions revoked.' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired OTP.' })
   @HttpCode(204)
   @Throttle({ default: { limit: 5, ttl: 15 * 60_000 } })
   async resetPasswordWithOtp(@Body() input: ResetPasswordDto): Promise<void> {
@@ -78,6 +92,9 @@ export class AuthController {
   }
 
   @Post('login')
+  @ApiOperation({ summary: 'Start a session and receive access and refresh tokens' })
+  @ApiResponse({ status: 201, description: 'Session created.' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials.' })
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   async login(@Body() input: LoginUserDto): Promise<LoginResult> {
     try {
@@ -92,6 +109,9 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @ApiOperation({ summary: 'Rotate a refresh token' })
+  @ApiResponse({ status: 201, description: 'New access and refresh tokens issued.' })
+  @ApiResponse({ status: 401, description: 'Invalid refresh token.' })
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   async refresh(@Body() input: RefreshTokenDto): Promise<LoginResult> {
     try {
@@ -103,6 +123,8 @@ export class AuthController {
   }
 
   @Post('logout')
+  @ApiOperation({ summary: 'Revoke the refresh-token session' })
+  @ApiResponse({ status: 204, description: 'Session revoked or already absent.' })
   @HttpCode(204)
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   async logout(@Body() input: RefreshTokenDto): Promise<void> {

@@ -80,3 +80,20 @@ npm test
 npm run test:e2e
 npm audit
 ```
+
+## Base de datos local
+
+PostgreSQL se ejecuta en Docker y se expone solamente en `localhost:5432`; no es accesible desde otros dispositivos de la red.
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+La primera ejecución crea un volumen Docker llamado `my-api-rest_postgres_data`, que conserva los datos al detener el contenedor. Para detener la base sin borrar datos:
+
+```bash
+docker compose down
+```
+
+`.env` contiene credenciales locales y está excluido de Git. Si otro desarrollador clona el repositorio, debe copiar `.env.example` como `.env` y reemplazar la contraseña de ejemplo antes de iniciar los contenedores.

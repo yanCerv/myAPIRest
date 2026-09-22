@@ -97,3 +97,15 @@ docker compose down
 ```
 
 `.env` contiene credenciales locales y está excluido de Git. Si otro desarrollador clona el repositorio, debe copiar `.env.example` como `.env` y reemplazar la contraseña de ejemplo antes de iniciar los contenedores.
+
+## Prisma y migraciones
+
+Prisma gestiona el esquema y las migraciones de PostgreSQL. El modelo compartido inicial es `User`; datos exclusivos de Pet o Health se modelarán en módulos separados.
+
+```bash
+npm run prisma:validate
+npm run prisma:migrate -- --name describe-your-change
+npm run prisma:generate
+```
+
+Las migraciones generadas en `prisma/migrations` se guardan en Git. El cliente generado en `src/generated/prisma` no se versiona: se vuelve a generar desde el esquema.

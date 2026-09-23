@@ -233,7 +233,11 @@ describe('Health endpoint (e2e)', () => {
       const secondToken = refresh.body.refreshToken as string;
       expect(secondToken).not.toBe(firstToken);
       await request(app.getHttpServer()).post('/api/v1/auth/refresh').send({ refreshToken: firstToken }).expect(401);
-      await request(app.getHttpServer()).post('/api/v1/auth/logout').send({ refreshToken: secondToken }).expect(204);
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/logout')
+        .send({ refreshToken: secondToken })
+        .expect(200)
+        .expect({ success: true });
       await request(app.getHttpServer()).post('/api/v1/auth/refresh').send({ refreshToken: secondToken }).expect(401);
     } finally {
       await app.get(PrismaService).user.deleteMany({ where: { email } });

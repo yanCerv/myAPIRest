@@ -124,10 +124,11 @@ export class AuthController {
 
   @Post('logout')
   @ApiOperation({ summary: 'Revoke the refresh-token session' })
-  @ApiResponse({ status: 204, description: 'Session revoked or already absent.' })
-  @HttpCode(204)
+  @ApiResponse({ status: 200, description: 'Session revoked or already absent.' })
+  @HttpCode(200)
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
-  async logout(@Body() input: RefreshTokenDto): Promise<void> {
+  async logout(@Body() input: RefreshTokenDto): Promise<{ success: true }> {
     await this.logoutUserSession.execute(input.refreshToken);
+    return { success: true };
   }
 }

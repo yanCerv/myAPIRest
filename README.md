@@ -110,7 +110,7 @@ Dentro de NestJS, `PrismaModule` expone `PrismaService` como la única puerta t�
 
 `POST /api/v1/auth/login` emite un access token JWT de corta duración y un refresh token opaco. Los refresh tokens se almacenan únicamente como hash en `refresh_sessions`, para que puedan revocarse o rotarse sin persistir secretos de sesión.
 
-`POST /api/v1/auth/refresh` rota el refresh token: el anterior deja de ser válido al entregar el siguiente. `POST /api/v1/auth/logout` revoca la sesión asociada al refresh token.
+`POST /api/v1/auth/refresh` rota el refresh token: el anterior deja de ser válido al entregar el siguiente. `POST /api/v1/auth/logout` revoca la sesión asociada al refresh token y responde `200` con `{ "success": true }`.
 
 `POST /api/v1/auth/forgot-password` siempre responde `202`, exista o no la cuenta, para no revelar correos registrados. Para una cuenta activa genera un OTP de seis dígitos, válido durante 15 minutos. `POST /api/v1/auth/reset-password` valida el OTP, permite un máximo de cinco intentos, cambia la contraseña y revoca todas las sesiones existentes.
 

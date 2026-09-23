@@ -114,6 +114,20 @@ Dentro de NestJS, `PrismaModule` expone `PrismaService` como la única puerta t�
 
 `POST /api/v1/auth/forgot-password` siempre responde `202`, exista o no la cuenta, para no revelar correos registrados. Para una cuenta activa genera un OTP de seis dígitos, válido durante 15 minutos. `POST /api/v1/auth/reset-password` valida el OTP, permite un máximo de cinco intentos, cambia la contraseña y revoca todas las sesiones existentes.
 
+## Contrato de errores
+
+Todos los errores HTTP comparten este formato, para que los clientes no dependan de respuestas particulares de NestJS:
+
+```json
+{
+  "statusCode": 401,
+  "code": "AUTH_INVALID_CREDENTIALS",
+  "message": "Correo o contraseña inválidos."
+}
+```
+
+La aplicación cliente debe usar `code` para decidir el comportamiento y `message` para mostrar una explicación segura. Los errores internos se devuelven como `INTERNAL_ERROR`; nunca incluyen detalles de PostgreSQL, Prisma, Resend ni secretos.
+
 Las rutas de autenticación permiten cinco intentos por IP en un minuto. El almacenamiento del rate limit es local en esta etapa; antes de desplegar varias réplicas se reemplazará por un almacenamiento compartido, como Redis.
 
 ```bash

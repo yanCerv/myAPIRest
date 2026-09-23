@@ -68,7 +68,12 @@ describe('Health endpoint (e2e)', () => {
         password: 'a-long-password-for-testing',
         isAdmin: true,
       })
-      .expect(400);
+      .expect(400)
+      .expect({
+        statusCode: 400,
+        code: 'VALIDATION_ERROR',
+        message: 'Los datos enviados no son válidos.',
+      });
   });
 
   it('rejects a duplicate registration email', async () => {
@@ -133,7 +138,12 @@ describe('Health endpoint (e2e)', () => {
         email: `unknown-${randomUUID()}@example.test`,
         password: 'a-long-password-for-testing',
       })
-      .expect(401);
+      .expect(401)
+      .expect({
+        statusCode: 401,
+        code: 'AUTH_INVALID_CREDENTIALS',
+        message: 'Correo o contraseña inválidos.',
+      });
   });
 
   it('accepts password recovery requests without exposing account existence', async () => {
@@ -258,7 +268,14 @@ describe('Health endpoint (e2e)', () => {
   });
 
   it('rejects missing and refresh-token authentication for /users/me', async () => {
-    await request(app.getHttpServer()).get('/api/v1/users/me').expect(401);
+    await request(app.getHttpServer())
+      .get('/api/v1/users/me')
+      .expect(401)
+      .expect({
+        statusCode: 401,
+        code: 'AUTH_UNAUTHORIZED',
+        message: 'No estás autorizado para realizar esta acción.',
+      });
 
     const email = `wrong-token-${randomUUID()}@example.test`;
     const password = 'a-long-password-for-testing';

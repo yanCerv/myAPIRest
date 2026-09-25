@@ -7,6 +7,7 @@ import { HealthModule } from './modules/health/health.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { MoviesModule } from './modules/movies/movies.module.js';
+import { EventsModule } from './modules/events/events.module.js';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { MoviesModule } from './modules/movies/movies.module.js';
     UsersModule,
     AuthModule,
     MoviesModule,
+    EventsModule,
   ],
   providers: [
     {

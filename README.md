@@ -22,6 +22,8 @@ La primera versión expondrá una API versionada (`/api/v1`) con estos endpoints
 | `GET` | `/users/me` | Consultar el perfil del usuario autenticado. |
 | `GET` | `/movies/now-playing`, `/movies/popular`, `/movies/top-rated`, `/movies/upcoming` | Consultar catálogo de películas. |
 | `GET` | `/movies/:id` | Consultar detalle de una película. |
+| `GET` | `/events?countryCode=MX&size=10&page=0` | Consultar eventos de Ticketmaster. |
+| `GET` | `/events/classifications` | Consultar clasificaciones de Ticketmaster. |
 
 ## Límites por dominio
 
@@ -133,6 +135,8 @@ La aplicación cliente debe usar `code` para decidir el comportamiento y `messag
 ## Movie catalog
 
 `movies` is a protected integration module for TMDB. It keeps the TMDB read token on the API server and returns a TMDB-compatible response while TicketSeller migrates to the shared host. Collections are cached in-memory for five minutes per API process. Configure `TMDB_READ_ACCESS_TOKEN` only in `.env`; never include it in a mobile application. TMDB attribution remains required in TicketSeller.
+
+`events` follows the same protected integration pattern for Ticketmaster Discovery. It keeps `TICKETMASTER_API_KEY` on the API server, preserves Ticketmaster-compatible responses, and caches each request for five minutes. The mobile client must never contain the key.
 
 Las rutas de autenticación permiten cinco intentos por IP en un minuto. El almacenamiento del rate limit es local en esta etapa; antes de desplegar varias réplicas se reemplazará por un almacenamiento compartido, como Redis.
 

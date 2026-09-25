@@ -112,7 +112,7 @@ describe('Health endpoint (e2e)', () => {
 
       expect(response.body).toMatchObject({
         tokenType: 'Bearer',
-        expiresIn: 900,
+        expiresIn: Number(process.env.JWT_ACCESS_TTL_SECONDS ?? 900),
       });
       expect(response.body.accessToken.split('.')).toHaveLength(3);
       expect(response.body.refreshToken).toContain('.');

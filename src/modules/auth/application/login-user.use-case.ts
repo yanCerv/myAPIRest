@@ -55,7 +55,7 @@ export class LoginUserUseCase {
     const refreshSecret = randomBytes(32).toString('base64url');
     const refreshToken = `${sessionId}.${refreshSecret}`;
     const refreshTokenHash = await this.passwordHasher.hash(refreshToken);
-    const absoluteExpiresAt = new Date(Date.now() + 24 * 3_600_000);
+    const absoluteExpiresAt = new Date(Date.now() + this.sessionTtlHours() * 3_600_000);
 
     await this.sessions.create({
       id: sessionId,
@@ -75,6 +75,16 @@ export class LoginUserUseCase {
       accessTokenExpiresAt: new Date(Date.now() + accessToken.expiresIn * 1000),
       session: { expiresAt: absoluteExpiresAt, timeZone: 'UTC' },
     };
+  }
+
+  private sessionTtlHours(): number {
+    const value = Number(process.env.SESSION_TTL_HOURS ?? 24);
+
+    if (!Number.isInteger(value) || value < 1 || value > 24 * 30) {
+      throw new Error('SESSION_TTL_HOURS must be an integer between 1 and 720.');
+    }
+
+    return value;
   }
 
 }

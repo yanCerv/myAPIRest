@@ -6,6 +6,7 @@ import { EmailModule } from './infrastructure/email/email.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { UsersModule } from './modules/users/users.module.js';
+import { MoviesModule } from './modules/movies/movies.module.js';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UsersModule } from './modules/users/users.module.js';
     HealthModule,
     UsersModule,
     AuthModule,
+    MoviesModule,
   ],
   providers: [
     {

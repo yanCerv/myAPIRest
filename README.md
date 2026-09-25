@@ -20,6 +20,8 @@ La primera versión expondrá una API versionada (`/api/v1`) con estos endpoints
 | `POST` | `/auth/forgot-password` | Solicitar un OTP de recuperación. |
 | `POST` | `/auth/reset-password` | Confirmar OTP y cambiar contraseña. |
 | `GET` | `/users/me` | Consultar el perfil del usuario autenticado. |
+| `GET` | `/movies/now-playing`, `/movies/popular`, `/movies/top-rated`, `/movies/upcoming` | Consultar catálogo de películas. |
+| `GET` | `/movies/:id` | Consultar detalle de una película. |
 
 ## Límites por dominio
 
@@ -127,6 +129,10 @@ Todos los errores HTTP comparten este formato, para que los clientes no dependan
 ```
 
 La aplicación cliente debe usar `code` para decidir el comportamiento y `message` para mostrar una explicación segura. Los errores internos se devuelven como `INTERNAL_ERROR`; nunca incluyen detalles de PostgreSQL, Prisma, Resend ni secretos.
+
+## Movie catalog
+
+`movies` is a protected integration module for TMDB. It keeps the TMDB read token on the API server and returns a TMDB-compatible response while TicketSeller migrates to the shared host. Collections are cached in-memory for five minutes per API process. Configure `TMDB_READ_ACCESS_TOKEN` only in `.env`; never include it in a mobile application. TMDB attribution remains required in TicketSeller.
 
 Las rutas de autenticación permiten cinco intentos por IP en un minuto. El almacenamiento del rate limit es local en esta etapa; antes de desplegar varias réplicas se reemplazará por un almacenamiento compartido, como Redis.
 

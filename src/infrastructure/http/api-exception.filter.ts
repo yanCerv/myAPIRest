@@ -91,6 +91,14 @@ export class ApiExceptionFilter implements ExceptionFilter {
       };
     }
 
+    if (statusCode === HttpStatus.SERVICE_UNAVAILABLE) {
+      return {
+        statusCode,
+        code: 'UPSTREAM_UNAVAILABLE',
+        message: 'El servicio externo no está disponible. Inténtalo de nuevo más tarde.',
+      };
+    }
+
     return {
       statusCode,
       code: 'HTTP_ERROR',

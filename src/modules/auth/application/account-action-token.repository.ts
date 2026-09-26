@@ -1,4 +1,4 @@
-export type AccountActionPurpose = 'RESET_PASSWORD' | 'RESTORE_ACCOUNT';
+export type AccountActionPurpose = 'RESET_PASSWORD' | 'RESTORE_ACCOUNT' | 'LOGIN_OTP';
 
 export interface CreateAccountActionTokenData {
   userId: string;

@@ -180,6 +180,44 @@ describe('Health endpoint (e2e)', () => {
     }
   });
 
+  it('creates a session from a valid passwordless login OTP', async () => {
+    const email = `login-otp-${randomUUID()}@example.test`;
+    const password = 'a-long-password-for-testing';
+    const otp = '123456';
+
+    try {
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/register')
+        .send({ email, password })
+        .expect(201);
+
+      const prisma = app.get(PrismaService);
+      const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+      await prisma.accountActionToken.create({
+        data: {
+          userId: user.id,
+          purpose: 'LOGIN_OTP',
+          tokenHash: await argon2.hash(otp),
+          expiresAt: new Date(Date.now() + 60_000),
+        },
+      });
+
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/auth/verify-login-code')
+        .send({ email, otp })
+        .expect(201);
+
+      expect(response.body).toMatchObject({ tokenType: 'Bearer' });
+      expect(response.body.accessToken.split('.')).toHaveLength(3);
+      const token = await prisma.accountActionToken.findFirstOrThrow({
+        where: { userId: user.id, purpose: 'LOGIN_OTP' },
+      });
+      expect(token.consumedAt).not.toBeNull();
+    } finally {
+      await app.get(PrismaService).user.deleteMany({ where: { email } });
+    }
+  });
+
   it('rejects an invalid OTP when resetting a password', async () => {
     const email = `invalid-reset-${randomUUID()}@example.test`;
     const password = 'a-long-password-for-testing';

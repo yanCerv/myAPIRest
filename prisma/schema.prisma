@@ -23,6 +23,7 @@ model User {
 enum AccountActionPurpose {
   RESET_PASSWORD
   RESTORE_ACCOUNT
+  LOGIN_OTP
 }
 
 model AccountActionToken {

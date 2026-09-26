@@ -11,6 +11,9 @@ import { RefreshUserSessionUseCase } from './application/refresh-user-session.us
 import { RegisterUserUseCase } from './application/register-user.use-case.js';
 import { RequestPasswordResetUseCase } from './application/request-password-reset.use-case.js';
 import { ResetPasswordUseCase } from './application/reset-password.use-case.js';
+import { IssueUserSessionUseCase } from './application/issue-user-session.use-case.js';
+import { RequestLoginOtpUseCase } from './application/request-login-otp.use-case.js';
+import { VerifyLoginOtpUseCase } from './application/verify-login-otp.use-case.js';
 import { Argon2PasswordHasher } from './infrastructure/argon2-password-hasher.js';
 import { PrismaAccountActionTokenRepository } from './infrastructure/prisma-account-action-token.repository.js';
 import { JwtAccessTokenIssuer } from './infrastructure/jwt-access-token-issuer.js';
@@ -31,6 +34,9 @@ import { ACCOUNT_ACTION_TOKEN_REPOSITORY } from './application/account-action-to
     RefreshUserSessionUseCase,
     RequestPasswordResetUseCase,
     ResetPasswordUseCase,
+    IssueUserSessionUseCase,
+    RequestLoginOtpUseCase,
+    VerifyLoginOtpUseCase,
     {
       provide: PASSWORD_HASHER,
       useClass: Argon2PasswordHasher,

@@ -1,6 +1,6 @@
 export interface SendAccountActionEmailInput {
   recipient: string;
-  purpose: 'reset-password' | 'restore-account';
+  purpose: 'reset-password' | 'restore-account' | 'login';
   otp: string;
   expiresAt: Date;
 }

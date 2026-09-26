@@ -32,6 +32,10 @@ import {
   ResetPasswordUseCase,
 } from '../application/reset-password.use-case.js';
 import { ResetPasswordDto } from './dto/reset-password.dto.js';
+import { RequestLoginOtpDto } from './dto/request-login-otp.dto.js';
+import { RequestLoginOtpUseCase } from '../application/request-login-otp.use-case.js';
+import { InvalidLoginOtpError, VerifyLoginOtpUseCase } from '../application/verify-login-otp.use-case.js';
+import { VerifyLoginOtpDto } from './dto/verify-login-otp.dto.js';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -43,6 +47,8 @@ export class AuthController {
     private readonly logoutUserSession: LogoutUserSessionUseCase,
     private readonly requestPasswordReset: RequestPasswordResetUseCase,
     private readonly resetPassword: ResetPasswordUseCase,
+    private readonly requestLoginOtp: RequestLoginOtpUseCase,
+    private readonly verifyLoginOtp: VerifyLoginOtpUseCase,
   ) {}
 
   @Post('register')
@@ -58,6 +64,32 @@ export class AuthController {
         throw new ConflictException('Email already registered.');
       }
 
+      throw error;
+    }
+  }
+
+  @Post('request-login-code')
+  @ApiOperation({ summary: 'Request a passwordless login OTP' })
+  @ApiResponse({ status: 202, description: 'Always returned to avoid account enumeration.' })
+  @HttpCode(202)
+  @Throttle({ default: { limit: 3, ttl: 15 * 60_000 } })
+  async requestLoginCode(@Body() input: RequestLoginOtpDto): Promise<{ message: string }> {
+    await this.requestLoginOtp.execute(input.email);
+    return { message: 'If an active account matches this email, a login code will be sent.' };
+  }
+
+  @Post('verify-login-code')
+  @ApiOperation({ summary: 'Verify a passwordless login OTP and start a session' })
+  @ApiResponse({ status: 201, description: 'Session created.' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired login OTP.' })
+  @Throttle({ default: { limit: 5, ttl: 15 * 60_000 } })
+  async verifyLoginCode(@Body() input: VerifyLoginOtpDto): Promise<LoginResult> {
+    try {
+      return await this.verifyLoginOtp.execute(input.email, input.otp);
+    } catch (error) {
+      if (error instanceof InvalidLoginOtpError) {
+        throw new UnauthorizedException('Invalid or expired login code.');
+      }
       throw error;
     }
   }

@@ -120,6 +120,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
         code: 'PASSWORD_RESET_INVALID_OR_EXPIRED',
         message: 'El código de recuperación es inválido o expiró.',
       },
+      'Invalid or expired login code.': {
+        code: 'AUTH_INVALID_LOGIN_OTP',
+        message: 'El código de inicio de sesión es inválido o expiró.',
+      },
     };
 
     return {

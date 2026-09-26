@@ -16,6 +16,8 @@ La primera versión expondrá una API versionada (`/api/v1`) con estos endpoints
 | --- | --- | --- |
 | `POST` | `/auth/register` | Crear una cuenta de usuario. |
 | `POST` | `/auth/login` | Iniciar una sesión. |
+| `POST` | `/auth/request-login-code` | Solicitar un OTP de inicio de sesión sin contraseña. |
+| `POST` | `/auth/verify-login-code` | Confirmar OTP e iniciar una sesión. |
 | `POST` | `/auth/logout` | Revocar la sesión actual. |
 | `POST` | `/auth/forgot-password` | Solicitar un OTP de recuperación. |
 | `POST` | `/auth/reset-password` | Confirmar OTP y cambiar contraseña. |
@@ -137,6 +139,10 @@ La aplicación cliente debe usar `code` para decidir el comportamiento y `messag
 `movies` is a protected integration module for TMDB. It keeps the TMDB read token on the API server and returns a TMDB-compatible response while TicketSeller migrates to the shared host. Collections are cached in-memory for five minutes per API process. Configure `TMDB_READ_ACCESS_TOKEN` only in `.env`; never include it in a mobile application. TMDB attribution remains required in TicketSeller.
 
 `events` follows the same protected integration pattern for Ticketmaster Discovery. It keeps `TICKETMASTER_API_KEY` on the API server, preserves Ticketmaster-compatible responses, and caches each request for five minutes. The mobile client must never contain the key.
+
+## Passwordless login OTP
+
+Active users can request a six-digit login code with `POST /auth/request-login-code` and exchange it at `POST /auth/verify-login-code`. Codes are stored only as hashes, expire after 10 minutes, are single-use, and accept at most five verification attempts. The request endpoint always returns `202` so it does not reveal whether an email is registered.
 
 Las rutas de autenticación permiten cinco intentos por IP en un minuto. El almacenamiento del rate limit es local en esta etapa; antes de desplegar varias réplicas se reemplazará por un almacenamiento compartido, como Redis.
 

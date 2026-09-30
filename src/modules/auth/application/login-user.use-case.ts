@@ -39,6 +39,7 @@ export class LoginUserUseCase {
     if (
       !user ||
       !user.isActive ||
+      !user.passwordHash ||
       !(await this.passwordHasher.verify(user.passwordHash, command.password))
     ) {
       throw new InvalidCredentialsError();

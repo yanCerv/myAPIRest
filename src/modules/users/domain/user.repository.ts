@@ -2,7 +2,7 @@ import { User } from './user.js';
 
 export interface CreateUserData {
   email: string;
-  passwordHash: string;
+  passwordHash: string | null;
 }
 
 export interface UserRepository {

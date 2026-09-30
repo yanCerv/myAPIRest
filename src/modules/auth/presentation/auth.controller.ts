@@ -36,6 +36,12 @@ import { RequestLoginOtpDto } from './dto/request-login-otp.dto.js';
 import { RequestLoginOtpUseCase } from '../application/request-login-otp.use-case.js';
 import { InvalidLoginOtpError, VerifyLoginOtpUseCase } from '../application/verify-login-otp.use-case.js';
 import { VerifyLoginOtpDto } from './dto/verify-login-otp.dto.js';
+import {
+  GoogleAccountLinkRequiredError,
+  InvalidGoogleIdentityError,
+  LoginWithGoogleUseCase,
+} from '../application/login-with-google.use-case.js';
+import { LoginWithGoogleDto } from './dto/login-with-google.dto.js';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -49,6 +55,7 @@ export class AuthController {
     private readonly resetPassword: ResetPasswordUseCase,
     private readonly requestLoginOtp: RequestLoginOtpUseCase,
     private readonly verifyLoginOtp: VerifyLoginOtpUseCase,
+    private readonly loginWithGoogle: LoginWithGoogleUseCase,
   ) {}
 
   @Post('register')
@@ -136,6 +143,26 @@ export class AuthController {
         throw new UnauthorizedException('Invalid email or password.');
       }
 
+      throw error;
+    }
+  }
+
+  @Post('google')
+  @ApiOperation({ summary: 'Verify a Google ID token and start a session' })
+  @ApiResponse({ status: 201, description: 'Session created.' })
+  @ApiResponse({ status: 401, description: 'Invalid Google ID token.' })
+  @ApiResponse({ status: 409, description: 'An existing account must explicitly link Google.' })
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  async loginWithGoogleToken(@Body() input: LoginWithGoogleDto): Promise<LoginResult> {
+    try {
+      return await this.loginWithGoogle.execute(input.idToken);
+    } catch (error) {
+      if (error instanceof InvalidGoogleIdentityError) {
+        throw new UnauthorizedException('Invalid Google ID token.');
+      }
+      if (error instanceof GoogleAccountLinkRequiredError) {
+        throw new ConflictException('Google account link required.');
+      }
       throw error;
     }
   }

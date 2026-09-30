@@ -25,7 +25,7 @@ export class RequestPasswordResetUseCase {
 
   async execute(email: string): Promise<void> {
     const user = await this.findUserByEmail.execute(email);
-    if (!user || !user.isActive) return;
+    if (!user || !user.isActive || !user.passwordHash) return;
 
     const otp = randomInt(100_000, 1_000_000).toString();
     const expiresAt = new Date(Date.now() + OTP_TTL_MS);

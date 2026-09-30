@@ -9,9 +9,10 @@ describe('RequestPasswordResetUseCase', () => {
   it('creates a hashed OTP and sends it for an active user', async () => {
     const findUser = {
       execute: vi.fn().mockResolvedValue({
-        id: '5b6959b2-3e13-426c-a2c5-b8770f253b28',
-        email: 'person@example.com',
-        isActive: true,
+      id: '5b6959b2-3e13-426c-a2c5-b8770f253b28',
+      email: 'person@example.com',
+      passwordHash: 'password-hash',
+      isActive: true,
       }),
     } as unknown as FindUserByEmailUseCase;
     const passwordHasher: PasswordHasher = { hash: vi.fn().mockResolvedValue('otp-hash') };

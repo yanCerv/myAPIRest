@@ -14,6 +14,7 @@ import { ResetPasswordUseCase } from './application/reset-password.use-case.js';
 import { IssueUserSessionUseCase } from './application/issue-user-session.use-case.js';
 import { RequestLoginOtpUseCase } from './application/request-login-otp.use-case.js';
 import { VerifyLoginOtpUseCase } from './application/verify-login-otp.use-case.js';
+import { LoginWithGoogleUseCase } from './application/login-with-google.use-case.js';
 import { Argon2PasswordHasher } from './infrastructure/argon2-password-hasher.js';
 import { PrismaAccountActionTokenRepository } from './infrastructure/prisma-account-action-token.repository.js';
 import { JwtAccessTokenIssuer } from './infrastructure/jwt-access-token-issuer.js';
@@ -21,6 +22,10 @@ import { AccessTokenGuard } from './infrastructure/access-token.guard.js';
 import { PrismaRefreshSessionRepository } from './infrastructure/prisma-refresh-session.repository.js';
 import { AuthController } from './presentation/auth.controller.js';
 import { ACCOUNT_ACTION_TOKEN_REPOSITORY } from './application/account-action-token.repository.js';
+import { EXTERNAL_IDENTITY_REPOSITORY } from './application/external-identity.repository.js';
+import { GOOGLE_IDENTITY_VERIFIER } from './application/google-identity-verifier.port.js';
+import { GoogleIdTokenVerifier } from './infrastructure/google-id-token-verifier.js';
+import { PrismaExternalIdentityRepository } from './infrastructure/prisma-external-identity.repository.js';
 
 @Global()
 @Module({
@@ -37,6 +42,7 @@ import { ACCOUNT_ACTION_TOKEN_REPOSITORY } from './application/account-action-to
     IssueUserSessionUseCase,
     RequestLoginOtpUseCase,
     VerifyLoginOtpUseCase,
+    LoginWithGoogleUseCase,
     {
       provide: PASSWORD_HASHER,
       useClass: Argon2PasswordHasher,
@@ -52,6 +58,14 @@ import { ACCOUNT_ACTION_TOKEN_REPOSITORY } from './application/account-action-to
     {
       provide: ACCOUNT_ACTION_TOKEN_REPOSITORY,
       useClass: PrismaAccountActionTokenRepository,
+    },
+    {
+      provide: EXTERNAL_IDENTITY_REPOSITORY,
+      useClass: PrismaExternalIdentityRepository,
+    },
+    {
+      provide: GOOGLE_IDENTITY_VERIFIER,
+      useClass: GoogleIdTokenVerifier,
     },
   ],
   exports: [AccessTokenGuard],

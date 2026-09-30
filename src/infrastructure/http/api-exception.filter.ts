@@ -76,6 +76,13 @@ export class ApiExceptionFilter implements ExceptionFilter {
     }
 
     if (statusCode === HttpStatus.CONFLICT) {
+      if (message === 'Google account link required.') {
+        return {
+          statusCode,
+          code: 'AUTH_PROVIDER_LINK_REQUIRED',
+          message: 'Inicia sesión con tu método original antes de vincular Google.',
+        };
+      }
       return {
         statusCode,
         code: 'EMAIL_ALREADY_REGISTERED',
@@ -123,6 +130,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
       'Invalid or expired login code.': {
         code: 'AUTH_INVALID_LOGIN_OTP',
         message: 'El código de inicio de sesión es inválido o expiró.',
+      },
+      'Invalid Google ID token.': {
+        code: 'AUTH_INVALID_GOOGLE_ID_TOKEN',
+        message: 'No fue posible verificar tu cuenta de Google.',
       },
     };
 

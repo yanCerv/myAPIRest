@@ -22,6 +22,10 @@ export class GoogleIdTokenVerifier implements GoogleIdentityVerifier {
     return {
       subject: payload.sub,
       email: payload.email.trim().toLowerCase(),
+      firstName: payload.given_name,
+      lastName: payload.family_name,
+      avatarUrl: payload.picture,
+      locale: payload.locale,
     };
   }
 }

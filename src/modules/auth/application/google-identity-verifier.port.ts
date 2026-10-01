@@ -1,6 +1,10 @@
 export interface VerifiedGoogleIdentity {
   subject: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+  locale?: string;
 }
 
 export interface GoogleIdentityVerifier {

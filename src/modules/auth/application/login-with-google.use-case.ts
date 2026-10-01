@@ -2,6 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateUserUseCase } from '../../users/application/create-user.use-case.js';
 import { FindUserByEmailUseCase } from '../../users/application/find-user-by-email.use-case.js';
 import { FindUserByIdUseCase } from '../../users/application/find-user-by-id.use-case.js';
+import { FindUserProfileUseCase } from '../../users/application/find-user-profile.use-case.js';
+import { UpsertUserProfileUseCase } from '../../users/application/upsert-user-profile.use-case.js';
 import { EXTERNAL_IDENTITY_REPOSITORY } from './external-identity.repository.js';
 import type { ExternalIdentityRepository } from './external-identity.repository.js';
 import { GOOGLE_IDENTITY_VERIFIER } from './google-identity-verifier.port.js';
@@ -33,6 +35,8 @@ export class LoginWithGoogleUseCase {
     private readonly findUserById: FindUserByIdUseCase,
     private readonly findUserByEmail: FindUserByEmailUseCase,
     private readonly createUser: CreateUserUseCase,
+    private readonly findUserProfile: FindUserProfileUseCase,
+    private readonly upsertUserProfile: UpsertUserProfileUseCase,
     private readonly issueUserSession: IssueUserSessionUseCase,
   ) {}
 
@@ -51,6 +55,15 @@ export class LoginWithGoogleUseCase {
     if (existingIdentity) {
       const user = await this.findUserById.execute(existingIdentity.userId);
       if (!user || !user.isActive) throw new InvalidGoogleIdentityError();
+      if (!(await this.findUserProfile.execute(user.id))) {
+        await this.upsertUserProfile.execute({
+          userId: user.id,
+          firstName: identity.firstName,
+          lastName: identity.lastName,
+          avatarUrl: identity.avatarUrl,
+          locale: identity.locale,
+        });
+      }
       return this.issueUserSession.execute(user.id);
     }
 
@@ -64,6 +77,13 @@ export class LoginWithGoogleUseCase {
     const user = await this.createUser.execute({
       email: identity.email,
       passwordHash: null,
+    });
+    await this.upsertUserProfile.execute({
+      userId: user.id,
+      firstName: identity.firstName,
+      lastName: identity.lastName,
+      avatarUrl: identity.avatarUrl,
+      locale: identity.locale,
     });
     await this.identities.create({
       userId: user.id,

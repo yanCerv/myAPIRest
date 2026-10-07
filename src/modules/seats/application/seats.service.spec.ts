@@ -3,11 +3,14 @@ import { SeatsService } from './seats.service.js';
 import { ShowtimesService } from '../../showtimes/application/showtimes.service.js';
 
 describe('SeatsService', () => {
-  const service = new SeatsService(new ShowtimesService());
+  const prisma = {
+    purchaseSeat: { findMany: async () => [] },
+  };
+  const service = new SeatsService(new ShowtimesService(), prisma as never);
   const showtimeId = 'demo-11982-2026-10-07-cine-3-1645';
 
-  it('returns a stable seat map for a valid demo showtime', () => {
-    const response = service.getSeatMap(showtimeId);
+  it('returns a stable seat map for a valid demo showtime', async () => {
+    const response = await service.getSeatMap(showtimeId);
 
     expect(response?.showtimeId).toBe(showtimeId);
     expect(response?.rows).toHaveLength(15);
@@ -23,10 +26,22 @@ describe('SeatsService', () => {
       expect.objectContaining({ type: 'SOFA', position: { rowIndex: 7, columnIndex: 5 } }),
       expect.objectContaining({ type: 'SOFA', position: { rowIndex: 7, columnIndex: 7 } }),
     ]));
-    expect(service.getSeatMap(showtimeId)).toEqual(response);
+    await expect(service.getSeatMap(showtimeId)).resolves.toEqual(response);
   });
 
-  it('does not expose a map for an unknown showtime', () => {
-    expect(service.getSeatMap('unknown-showtime')).toBeNull();
+  it('does not expose a map for an unknown showtime', async () => {
+    await expect(service.getSeatMap('unknown-showtime')).resolves.toBeNull();
+  });
+
+  it('marks seats persisted by a purchase as sold', async () => {
+    const soldSeatId = `${showtimeId}:A-1`;
+    const serviceWithSoldSeat = new SeatsService(
+      new ShowtimesService(),
+      { purchaseSeat: { findMany: async () => [{ seatId: soldSeatId }] } } as never,
+    );
+
+    const response = await serviceWithSoldSeat.getSeatMap(showtimeId);
+
+    expect(response?.rows[0]?.seats[0]?.status).toBe('SOLD');
   });
 });

@@ -21,8 +21,8 @@ export class SeatsController {
   @ApiResponse({ status: 200, description: 'Seat map with stable seat identifiers and availability state.' })
   @ApiResponse({ status: 401, description: 'Authentication is required.' })
   @ApiResponse({ status: 404, description: 'Showtime does not exist.' })
-  getSeatMap(@Param('showtimeId') showtimeId: string) {
-    const response = this.seats.getSeatMap(showtimeId);
+  async getSeatMap(@Param('showtimeId') showtimeId: string) {
+    const response = await this.seats.getSeatMap(showtimeId);
     if (!response) throw new NotFoundException();
     return response;
   }

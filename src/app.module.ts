@@ -11,6 +11,7 @@ import { EventsModule } from './modules/events/events.module.js';
 import { FavoritesModule } from './modules/favorites/favorites.module.js';
 import { ShowtimesModule } from './modules/showtimes/showtimes.module.js';
 import { SeatsModule } from './modules/seats/seats.module.js';
+import { PurchasesModule } from './modules/purchases/purchases.module.js';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { SeatsModule } from './modules/seats/seats.module.js';
     FavoritesModule,
     ShowtimesModule,
     SeatsModule,
+    PurchasesModule,
   ],
   providers: [
     {

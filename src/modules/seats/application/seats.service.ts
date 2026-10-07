@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../infrastructure/database/prisma/prisma.service.js';
 import { ShowtimesService } from '../../showtimes/application/showtimes.service.js';
 
 export type SeatStatus = 'AVAILABLE' | 'SOLD';
@@ -57,11 +58,20 @@ const SEAT_LAYOUT: readonly SeatRowLayout[] = [
 
 @Injectable()
 export class SeatsService {
-  constructor(private readonly showtimes: ShowtimesService) {}
+  constructor(
+    private readonly showtimes: ShowtimesService,
+    private readonly prisma: PrismaService,
+  ) {}
 
-  getSeatMap(showtimeId: string): ShowtimeSeatMapResponse | null {
+  async getSeatMap(showtimeId: string): Promise<ShowtimeSeatMapResponse | null> {
     const showtime = this.showtimes.findMovieShowtime(showtimeId);
     if (!showtime) return null;
+
+    const purchasedSeats = await this.prisma.purchaseSeat.findMany({
+      where: { showtimeId },
+      select: { seatId: true },
+    });
+    const purchasedSeatIds = new Set(purchasedSeats.map((seat) => seat.seatId));
 
     return {
       showtimeId,
@@ -70,9 +80,12 @@ export class SeatsService {
         const seats = type === null
           ? []
           : layout.columnIndexes.map((columnIndex, seatIndex) => {
-            const status: SeatStatus = this.isSold(showtimeId, rowIndex, seatIndex) ? 'SOLD' : 'AVAILABLE';
+            const id = `${showtimeId}:${layout.rowName}-${seatIndex + 1}`;
+            const status: SeatStatus = this.isSold(showtimeId, rowIndex, seatIndex) || purchasedSeatIds.has(id)
+              ? 'SOLD'
+              : 'AVAILABLE';
             return {
-              id: `${showtimeId}:${layout.rowName}-${seatIndex + 1}`,
+              id,
               seatNumber: String(seatIndex + 1),
               type,
               status,

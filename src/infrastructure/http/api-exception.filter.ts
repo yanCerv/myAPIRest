@@ -48,6 +48,13 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const message = this.getExceptionMessage(exception);
 
     if (statusCode === HttpStatus.BAD_REQUEST) {
+      if (message === 'Payment details are invalid.') {
+        return {
+          statusCode,
+          code: 'PAYMENT_INVALID_DETAILS',
+          message: 'Verifica nuevamente los datos de tu cuenta bancaria e inténtalo nuevamente.',
+        };
+      }
       return {
         statusCode,
         code: 'VALIDATION_ERROR',
@@ -76,6 +83,13 @@ export class ApiExceptionFilter implements ExceptionFilter {
     }
 
     if (statusCode === HttpStatus.CONFLICT) {
+      if (message === 'Seats are no longer available.') {
+        return {
+          statusCode,
+          code: 'SEATS_UNAVAILABLE',
+          message: 'Uno o más asientos ya no están disponibles. Selecciona otros e inténtalo nuevamente.',
+        };
+      }
       if (message === 'Google account link required.') {
         return {
           statusCode,
@@ -95,6 +109,14 @@ export class ApiExceptionFilter implements ExceptionFilter {
         statusCode,
         code: 'RATE_LIMITED',
         message: 'Demasiados intentos. Inténtalo de nuevo más tarde.',
+      };
+    }
+
+    if (statusCode === HttpStatus.PAYMENT_REQUIRED) {
+      return {
+        statusCode,
+        code: 'PAYMENT_DECLINED',
+        message: 'El banco rechazó la compra. Inténtalo nuevamente más tarde.',
       };
     }
 

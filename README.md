@@ -26,6 +26,8 @@ La primera versión expondrá una API versionada (`/api/v1`) con estos endpoints
 | `GET` | `/movies/:id` | Consultar detalle de una película. |
 | `GET` | `/events?countryCode=MX&size=10&page=0` | Consultar eventos de Ticketmaster. |
 | `GET` | `/events/classifications` | Consultar clasificaciones de Ticketmaster. |
+| `POST` | `/purchases` | Crear una compra de boletos mediante la pasarela sandbox. |
+| `GET` | `/purchases` | Consultar las compras confirmadas del usuario autenticado. |
 
 ## Límites por dominio
 
@@ -55,6 +57,7 @@ La selección final se versionará junto con la implementación; no se instalar�
 - Rate limiting en endpoints sensibles como registro y login.
 - CORS y cabeceras de seguridad se configurarán antes de habilitar clientes web o despliegues públicos.
 - Secretos exclusivamente en variables de entorno; `.env` nunca se sube al repositorio. Se proporcionará `.env.example` sin secretos.
+- Los datos de tarjeta y CVV usados por la pasarela sandbox se validan en memoria: nunca se guardan, devuelven ni registran.
 - Migraciones, lockfile y configuración reproducible sí se guardan en Git.
 
 ## Desarrollo
@@ -119,6 +122,23 @@ Dentro de NestJS, `PrismaModule` expone `PrismaService` como la única puerta t�
 `POST /api/v1/auth/refresh` rota el refresh token: el anterior deja de ser válido al entregar el siguiente. `POST /api/v1/auth/logout` revoca la sesión asociada al refresh token y responde `200` con `{ "success": true }`.
 
 `POST /api/v1/auth/forgot-password` siempre responde `202`, exista o no la cuenta, para no revelar correos registrados. Para una cuenta activa genera un OTP de seis dígitos, válido durante 15 minutos. `POST /api/v1/auth/reset-password` valida el OTP, permite un máximo de cinco intentos, cambia la contraseña y revoca todas las sesiones existentes.
+
+## Compras y pasarela sandbox
+
+`POST /api/v1/purchases` crea una compra confirmada para el usuario autenticado. El servicio valida que el horario y los asientos existan, recalcula el precio en el servidor, registra una fotografía histórica del boleto y evita la doble venta con una restricción única por horario y asiento. `GET /api/v1/purchases` devuelve el historial de compras del usuario actual.
+
+La pasarela es **exclusivamente sandbox**: las tarjetas siguientes son datos de prueba, no representan tarjetas reales y no procesan cargos. Los números completos, fecha de expiración y CVV se usan solo para simular la decisión del banco y nunca se persisten, devuelven ni registran.
+
+| Marca | Resultado sandbox | Número | Expira | CVV |
+| --- | --- | --- | --- | --- |
+| Visa | Aprobado | `4242 4242 4242 4242` | `10/30` | `111` |
+| Mastercard | Aprobado | `5555 5555 5555 4444` | `10/30` | `222` |
+| Amex | Aprobado | `3782 822463 10005` | `10/30` | `3333` |
+| Visa | Rechazado por el banco | `4000 0000 0000 0002` | `10/30` | `111` |
+| Mastercard | Rechazado por el banco | `5105 1051 0510 5100` | `10/30` | `222` |
+| Amex | Rechazado por el banco | `3714 496353 98431` | `10/30` | `3333` |
+
+Una tarjeta aprobada con fecha o CVV distinto devuelve `400 PAYMENT_INVALID_DETAILS`. Una tarjeta configurada como rechazada devuelve `402 PAYMENT_DECLINED`. Ninguno de los dos casos crea una compra ni marca asientos como vendidos.
 
 ## Contrato de errores
 

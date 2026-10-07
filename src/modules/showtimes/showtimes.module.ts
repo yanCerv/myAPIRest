@@ -5,5 +5,6 @@ import { ShowtimesController } from './presentation/showtimes.controller.js';
 @Module({
   controllers: [ShowtimesController],
   providers: [ShowtimesService],
+  exports: [ShowtimesService],
 })
 export class ShowtimesModule {}

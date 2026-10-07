@@ -10,6 +10,7 @@ import { MoviesModule } from './modules/movies/movies.module.js';
 import { EventsModule } from './modules/events/events.module.js';
 import { FavoritesModule } from './modules/favorites/favorites.module.js';
 import { ShowtimesModule } from './modules/showtimes/showtimes.module.js';
+import { SeatsModule } from './modules/seats/seats.module.js';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ShowtimesModule } from './modules/showtimes/showtimes.module.js';
     EventsModule,
     FavoritesModule,
     ShowtimesModule,
+    SeatsModule,
   ],
   providers: [
     {

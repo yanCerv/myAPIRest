@@ -62,8 +62,24 @@ export class ShowtimesService {
     };
   }
 
+  findMovieShowtime(showtimeId: string): MovieShowtime | null {
+    const match = /^demo-(\d+)-(\d{4}-\d{2}-\d{2})-(.+)-(\d{4})$/.exec(showtimeId);
+    if (!match) return null;
+
+    const movieId = Number(match[1]);
+    const date = match[2];
+    if (!Number.isSafeInteger(movieId) || movieId < 1 || !this.isCalendarDate(date)) return null;
+
+    return this.getMovieShowtimes(movieId, date).showtimes.find((showtime) => showtime.id === showtimeId) ?? null;
+  }
+
   private showtimeId(movieId: number, date: string, template: ShowtimeTemplate): string {
     const cinema = template.cinema.toLowerCase().replaceAll(' ', '-');
     return `demo-${movieId}-${date}-${cinema}-${template.time.replace(':', '')}`;
+  }
+
+  private isCalendarDate(date: string): boolean {
+    const parsed = new Date(`${date}T00:00:00.000Z`);
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date;
   }
 }

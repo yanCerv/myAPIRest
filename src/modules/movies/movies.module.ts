@@ -10,5 +10,6 @@ import { MoviesController } from './presentation/movies.controller.js';
     MoviesService,
     { provide: TMDB_CLIENT, useClass: TmdbHttpClient },
   ],
+  exports: [MoviesService],
 })
 export class MoviesModule {}

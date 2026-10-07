@@ -8,6 +8,8 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { MoviesModule } from './modules/movies/movies.module.js';
 import { EventsModule } from './modules/events/events.module.js';
+import { FavoritesModule } from './modules/favorites/favorites.module.js';
+import { ShowtimesModule } from './modules/showtimes/showtimes.module.js';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { EventsModule } from './modules/events/events.module.js';
     AuthModule,
     MoviesModule,
     EventsModule,
+    FavoritesModule,
+    ShowtimesModule,
   ],
   providers: [
     {

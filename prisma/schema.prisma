@@ -20,6 +20,7 @@ model User {
   profile            UserProfile?
   movieFavorites     MovieFavorite[]
   purchases          Purchase[]
+  orderSessions      OrderSession[]
 
   @@map("users")
 }
@@ -36,6 +37,17 @@ enum PaymentMethod {
 
 enum PaymentStatus {
   APPROVED
+}
+
+enum OrderSessionStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  EXPIRED
+  CANCELLED
+}
+
+enum OrderPaymentProvider {
+  PAYPAL
 }
 
 model Purchase {
@@ -83,6 +95,44 @@ model PurchaseSeat {
   @@unique([showtimeId, seatId])
   @@index([purchaseId])
   @@map("purchase_seats")
+}
+
+model OrderSession {
+  id              String               @id @default(uuid()) @db.Uuid
+  userId          String               @map("user_id") @db.Uuid
+  status          OrderSessionStatus   @default(PENDING_PAYMENT)
+  paymentProvider OrderPaymentProvider @map("payment_provider")
+  paypalOrderId   String?              @unique @map("paypal_order_id") @db.VarChar(64)
+  showtimeId      String               @map("showtime_id") @db.VarChar(255)
+  buyerFirstName  String               @map("buyer_first_name") @db.VarChar(100)
+  buyerLastName   String               @map("buyer_last_name") @db.VarChar(100)
+  buyerEmail      String               @map("buyer_email") @db.VarChar(320)
+  totalCents      Int                  @map("total_cents")
+  currency        String               @db.VarChar(3)
+  expiresAt       DateTime             @map("expires_at")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seatHolds       SeatHold[]
+
+  @@index([userId, createdAt])
+  @@index([showtimeId, expiresAt])
+  @@index([status, expiresAt])
+  @@map("order_sessions")
+}
+
+model SeatHold {
+  id             String       @id @default(uuid()) @db.Uuid
+  orderSessionId String       @map("order_session_id") @db.Uuid
+  showtimeId     String       @map("showtime_id") @db.VarChar(255)
+  seatId         String       @map("seat_id") @db.VarChar(255)
+  expiresAt      DateTime     @map("expires_at")
+  orderSession   OrderSession @relation(fields: [orderSessionId], references: [id], onDelete: Cascade)
+
+  @@unique([showtimeId, seatId])
+  @@index([expiresAt])
+  @@index([orderSessionId])
+  @@map("seat_holds")
 }
 
 model MovieFavorite {

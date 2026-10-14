@@ -5,6 +5,7 @@ import { ShowtimesService } from '../../showtimes/application/showtimes.service.
 describe('SeatsService', () => {
   const prisma = {
     purchaseSeat: { findMany: async () => [] },
+    seatHold: { findMany: async () => [] },
   };
   const service = new SeatsService(new ShowtimesService(), prisma as never);
   const showtimeId = 'demo-11982-2026-10-07-cine-3-1645';
@@ -37,7 +38,10 @@ describe('SeatsService', () => {
     const soldSeatId = `${showtimeId}:A-1`;
     const serviceWithSoldSeat = new SeatsService(
       new ShowtimesService(),
-      { purchaseSeat: { findMany: async () => [{ seatId: soldSeatId }] } } as never,
+      {
+        purchaseSeat: { findMany: async () => [{ seatId: soldSeatId }] },
+        seatHold: { findMany: async () => [] },
+      } as never,
     );
 
     const response = await serviceWithSoldSeat.getSeatMap(showtimeId);

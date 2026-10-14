@@ -72,6 +72,11 @@ export class SeatsService {
       select: { seatId: true },
     });
     const purchasedSeatIds = new Set(purchasedSeats.map((seat) => seat.seatId));
+    const heldSeats = await this.prisma.seatHold.findMany({
+      where: { showtimeId, expiresAt: { gt: new Date() } },
+      select: { seatId: true },
+    });
+    const heldSeatIds = new Set(heldSeats.map((seat) => seat.seatId));
 
     return {
       showtimeId,
@@ -81,7 +86,7 @@ export class SeatsService {
           ? []
           : layout.columnIndexes.map((columnIndex, seatIndex) => {
             const id = `${showtimeId}:${layout.rowName}-${seatIndex + 1}`;
-            const status: SeatStatus = this.isSold(showtimeId, rowIndex, seatIndex) || purchasedSeatIds.has(id)
+            const status: SeatStatus = this.isSold(showtimeId, rowIndex, seatIndex) || purchasedSeatIds.has(id) || heldSeatIds.has(id)
               ? 'SOLD'
               : 'AVAILABLE';
             return {

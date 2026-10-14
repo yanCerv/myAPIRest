@@ -146,6 +146,8 @@ The gateway is **sandbox-only**: the cards below are test credentials, do not re
 
 An approved card with a different expiration date or CVV returns `400 PAYMENT_INVALID_DETAILS`. A card configured as declined returns `402 PAYMENT_DECLINED`. Neither case creates a purchase or marks seats as sold.
 
+PayPal Sandbox groundwork is documented in [docs/paypal-sandbox-roadmap.md](docs/paypal-sandbox-roadmap.md). PayPal remains disabled until the server order/capture endpoints and iOS Universal Link return flow are complete.
+
 ## Error contract
 
 All HTTP errors share this format, so clients do not depend on NestJS-specific responses:

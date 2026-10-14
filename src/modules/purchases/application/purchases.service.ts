@@ -5,6 +5,7 @@ import { MoviesService } from '../../movies/application/movies.service.js';
 import { SeatsService, type ShowtimeSeat } from '../../seats/application/seats.service.js';
 import { ShowtimesService } from '../../showtimes/application/showtimes.service.js';
 import { PaymentSandboxService } from './payment-sandbox.service.js';
+import { SeatsUnavailableError } from './order-sessions.service.js';
 
 export class ShowtimeNotFoundError extends Error {
   constructor() {
@@ -13,12 +14,7 @@ export class ShowtimeNotFoundError extends Error {
   }
 }
 
-export class SeatsUnavailableError extends Error {
-  constructor() {
-    super('Seats are no longer available.');
-    this.name = 'SeatsUnavailableError';
-  }
-}
+export { SeatsUnavailableError } from './order-sessions.service.js';
 
 export interface CreatePurchaseInput {
   showtimeId: string;

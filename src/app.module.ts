@@ -13,6 +13,7 @@ import { ShowtimesModule } from './modules/showtimes/showtimes.module.js';
 import { SeatsModule } from './modules/seats/seats.module.js';
 import { PurchasesModule } from './modules/purchases/purchases.module.js';
 import { FeaturesModule } from './modules/features/features.module.js';
+import { PaymentsModule } from './modules/payments/payments.module.js';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { FeaturesModule } from './modules/features/features.module.js';
     SeatsModule,
     PurchasesModule,
     FeaturesModule,
+    PaymentsModule,
   ],
   providers: [
     {

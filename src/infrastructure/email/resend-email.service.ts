@@ -16,9 +16,11 @@ export class ResendEmailService implements EmailService {
       throw new Error('RESEND_API_KEY and EMAIL_FROM must be configured.');
     }
 
-    const action = input.purpose === 'reset-password'
-      ? 'restablecer tu contraseña'
-      : 'restaurar tu cuenta';
+    const action = input.purpose === 'login'
+      ? 'iniciar sesión'
+      : input.purpose === 'reset-password'
+        ? 'restablecer tu contraseña'
+        : 'restaurar tu cuenta';
     const expiresAt = input.expiresAt.toISOString().replace('T', ' ').replace('.000Z', ' UTC');
     const resend = new Resend(apiKey);
     const { error } = await resend.emails.send({

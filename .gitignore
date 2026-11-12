@@ -142,3 +142,7 @@ src/generated/prisma/
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Internal working context for AI agents. It may describe local state and must
+# never be committed as project documentation or a source of secrets.
+.agents/context/
